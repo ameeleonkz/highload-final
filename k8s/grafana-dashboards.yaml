@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+  rps-dashboard.json: |
+    {
+      "id": null,
+      "uid": "rps-dashboard",
+      "title": "RPS",
+      "schemaVersion": 36,
+      "version": 1,
+      "refresh": "10s",
+      "timezone": "browser",
+      "templating": {
+        "list": [
+          {
+            "name": "DS_PROMETHEUS",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": {
+              "text": "Prometheus",
+              "value": "Prometheus"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Ingest RPS",
+          "datasource": "$DS_PROMETHEUS",
+          "targets": [
+            {
+              "expr": "rate(ingest_total[1m])",
+              "legendFormat": "rps"
+            }
+          ],
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+        }
+      ]
+    }
+  latency-dashboard.json: |
+    {
+      "id": null,
+      "uid": "latency-dashboard",
+      "title": "Latency",
+      "schemaVersion": 36,
+      "version": 1,
+      "refresh": "10s",
+      "timezone": "browser",
+      "templating": {
+        "list": [
+          {
+            "name": "DS_PROMETHEUS",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": {
+              "text": "Prometheus",
+              "value": "Prometheus"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "p95 Ingest Latency (s)",
+          "datasource": "$DS_PROMETHEUS",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(ingest_processing_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p95"
+            }
+          ],
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+        }
+      ]
+    }
+  anomaly-rate-dashboard.json: |
+    {
+      "id": null,
+      "uid": "anomaly-rate-dashboard",
+      "title": "Anomaly Rate",
+      "schemaVersion": 36,
+      "version": 1,
+      "refresh": "10s",
+      "timezone": "browser",
+      "templating": {
+        "list": [
+          {
+            "name": "DS_PROMETHEUS",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": {
+              "text": "Prometheus",
+              "value": "Prometheus"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "RPS Anomaly Rate",
+          "datasource": "$DS_PROMETHEUS",
+          "targets": [
+            {
+              "expr": "rate(analytics_anomaly_rps_total[5m]) / rate(ingest_total[5m])",
+              "legendFormat": "anomaly_rate"
+            }
+          ],
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+        }
+      ]
+    }

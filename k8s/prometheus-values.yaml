@@ -1,0 +1,33 @@
+serverFiles:
+  alerting_rules.yml:
+    groups:
+    - name: analytics.rules
+      rules:
+      - alert: HighAnomalyRate
+        expr: increase(analytics_anomaly_rps_total[1m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High anomaly rate detected"
+          description: "More than 5 RPS anomalies per minute for 1 minute"
+server:
+  extraScrapeConfigs:
+    - job_name: "kubernetes-pods-annotated"
+      kubernetes_sd_configs:
+        - role: pod
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          regex: (.+):(?:\\d+);(\\d+)
+          replacement: $1:$2
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
